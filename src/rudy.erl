@@ -22,12 +22,14 @@ init(Port) ->
   end.
 
 handler(Listen) ->
-  io:format("idle~n"),
+  io:format("Rudy: Listening...~n"),
   case gen_tcp:accept(Listen) of
     {ok, Client} ->
+      io:format("Rudy: Client ~w found!~n", [Client]),
       request(Client),
       handler(Listen);
-    {error, _Error} ->
+    {error, Error} ->
+      io:format("Rudy: Error: ~w~n", [Error]),
       error
   end.
 
@@ -39,9 +41,10 @@ request(Client) ->
       Response = reply(Request),
       gen_tcp:send(Client, Response);
     {error, Error} ->
-      io:format("rudy: error: ~w~n", [Error])
+      io:format("Rudy: Error: ~w~n", [Error])
   end,
-  gen_tcp:close(Client).
+  gen_tcp:close(Client),
+  io:format("Rudy: Connection closed.~n").
 
 reply({{get, URI, _}, _, _}) ->
   http:ok(URI).
