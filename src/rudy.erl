@@ -25,7 +25,8 @@ handler(Listen) ->
   io:format("Rudy: Listening...~n"),
   case gen_tcp:accept(Listen) of
     {ok, Client} ->
-      io:format("Rudy: Client ~w found!~n", [Client]),
+      {ok, {Addr, Port}} = inet:peername(Client),
+      io:format("Rudy: Client ~w on port ~w found!~n", [Addr, Port]),
       request(Client),
       handler(Listen);
     {error, Error} ->
@@ -38,6 +39,8 @@ request(Client) ->
   case Recv of
     {ok, Str} ->
       Request = http:parse_request(Str),
+      {_, Headers, _} = Request,
+      lists:foreach(fun(H) -> io:format("     ~s~n", [H]) end, Headers),
       Response = reply(Request),
       gen_tcp:send(Client, Response);
     {error, Error} ->
@@ -47,4 +50,8 @@ request(Client) ->
   io:format("Rudy: Connection closed.~n").
 
 reply({{get, URI, _}, _, _}) ->
-  http:ok(URI).
+  io:format(URI),
+  case URI of
+    _ -> http:ok(URI)
+  end.
+
