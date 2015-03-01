@@ -22,15 +22,15 @@ init(Port) ->
   end.
 
 handler(Listen) ->
-  io:format("Rudy: Listening...~n"),
+  log("Rudy: Listening...~n", []),
   case gen_tcp:accept(Listen) of
     {ok, Client} ->
       {ok, {Addr, Port}} = inet:peername(Client),
-      io:format("Rudy: Client ~w on port ~w found!~n", [Addr, Port]),
+      log("Rudy: Client ~w on port ~w found!~n", [Addr, Port]),
       request(Client),
       handler(Listen);
     {error, Error} ->
-      io:format("Rudy: Error: ~w~n", [Error]),
+      log("Rudy: Error: ~w~n", [Error]),
       error
   end.
 
@@ -39,15 +39,15 @@ request(Client) ->
   case Recv of
     {ok, Str} ->
       Request = http:parse_request(Str),
-      {_, Headers, _} = Request,
-      lists:foreach(fun(H) -> io:format("     ~s~n", [H]) end, Headers),
+      %{_, Headers, _} = Request,
+      %lists:foreach(fun(H) -> io:format("     ~s~n", [H]) end, Headers),
       Response = reply(Request),
       gen_tcp:send(Client, Response);
     {error, Error} ->
-      io:format("Rudy: Error: ~w~n", [Error])
+      log("Rudy: Error: ~w~n", [Error])
   end,
   gen_tcp:close(Client),
-  io:format("Rudy: Connection closed.~n").
+  log("Rudy: Connection closed.~n").
 
 reply({{get, URI, _}, _, _}) ->
   io:format(URI),
@@ -55,3 +55,11 @@ reply({{get, URI, _}, _, _}) ->
     _ -> http:ok(URI)
   end.
 
+log(String) ->
+  log(String, []).
+log(String, Data) ->
+  Timestamp = os:timestamp(),
+  {_, {HH, MM, SS}} = calendar:now_to_local_time(Timestamp),
+  NewString = "[~w:~w:~w] " ++ String,
+  NewData = [HH, MM, SS | Data],
+  io:format(NewString, NewData).
