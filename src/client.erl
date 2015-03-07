@@ -15,6 +15,3 @@ test() ->
     {error, Error} ->
       ok = io:format("Client: ~w~n", [Error])
   end.
-
-close(Socket) ->      %% Manually close the connection
-  gen_tcp:close(Socket).

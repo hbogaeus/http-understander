@@ -22,15 +22,15 @@ init(Port) ->
   end.
 
 handler(Listen) ->
-  log("Rudy: Listening...~n", []),
+  %io:format("Rudy: Listening...~n", []),
   case gen_tcp:accept(Listen) of
     {ok, Client} ->
       {ok, {Addr, Port}} = inet:peername(Client),
-      log("Rudy: Client ~w on port ~w found!~n", [Addr, Port]),
+      %io:format("Rudy: Client ~w on port ~w found!~n", [Addr, Port]),
       request(Client),
       handler(Listen);
     {error, Error} ->
-      log("Rudy: Error: ~w~n", [Error]),
+      %io:format("Rudy: Error: ~w~n", [Error]),
       error
   end.
 
@@ -44,13 +44,15 @@ request(Client) ->
       Response = reply(Request),
       gen_tcp:send(Client, Response);
     {error, Error} ->
-      log("Rudy: Error: ~w~n", [Error])
+      %io:format("Rudy: Error: ~w~n", [Error])
+      ok
   end,
   gen_tcp:close(Client),
-  log("Rudy: Connection closed.~n").
+  %io:format("Rudy: Connection closed.~n").
+  ok.
 
 reply({{get, URI, _}, _, _}) ->
-  io:format(URI),
+  timer:sleep(40),
   case URI of
     _ -> http:ok(URI)
   end.
